@@ -1,16 +1,47 @@
 <!DOCTYPE html>
-<html>
-
+<html ng-app="sheetApp">
 <head>
-    <meta charset="UTF-8">
-    <title>Sample</title>
+  <meta charset="utf-8">
+  <title>Google Sheets Grid</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+  </style>
 </head>
+<body ng-controller="SheetController">
 
-<body>
-    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quaerat quo corrupti unde aliquam magnam, maxime labore
-        eos omnis possimus autem similique quae, quia nam, molestiae aperiam ratione est ut repellendus?</p>
-    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quaerat quo corrupti unde aliquam magnam, maxime labore
-        eos omnis possimus autem similique quae, quia nam, molestiae aperiam ratione est ut repellendus?</p>
+  <h2>Google Sheets Data Grid</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th ng-repeat="header in headers">{{ header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="row in rows">
+        <td ng-repeat="cell in row">{{ cell }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    angular.module('sheetApp', []).controller('SheetController', function($scope, $http) {
+      const sheetId = 'YOUR_SHEET_ID_HERE';
+      const sheetName = 'Inventory';
+      //const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?alt=json&key=YOUR_API_KEY`;
+      const url=`https://docs.google.com/spreadsheets/d/e/2PACX-1vTJsa_NO-PA69sAIlKxJPAiAHbvrK6Dcjmg8xs79Le0Z3DduYp8d0Ma_xglC0XcMYRHnt09c8Lsvlbc/pub?output=xlsx`
+      $http.get(url).then(function(response) {
+        const data = response.data.values;
+        $scope.headers = data[0];
+        $scope.rows = data.slice(1);
+      }, function(error) {
+        console.error('Failed to load data:', error);
+      });
+    });
+  </script>
+
 </body>
-
 </html>
