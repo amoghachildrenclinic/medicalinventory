@@ -1,47 +1,50 @@
 <!DOCTYPE html>
 <html ng-app="sheetApp">
 <head>
-  <meta charset="utf-8">
-  <title>Google Sheets Grid</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
-  <style>
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
-  </style>
+  <title>Read Google Sheet</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 </head>
 <body ng-controller="SheetController">
 
-  <h2>Google Sheets Data Grid</h2>
-
-  <table>
-    <thead>
+  <div>
+    <h3>Google Sheet Data:</h3>
+     <div>
+      <input type="text" ng-model="nameFilter" placeholder="Filter by Particulars">
+    </div>
+     <table border="1">
       <tr>
-        <th ng-repeat="header in headers">{{ header }}</th>
+        <th ng-repeat="header in sheetData[0]">{{ header }}</th>
       </tr>
-    </thead>
-    <tbody>
-      <tr ng-repeat="row in rows">
-        <td ng-repeat="cell in row">{{ cell }}</td>
+      <tr ng-repeat="row in sheetData.slice(1) | filter:filterByName">
+        <td ng-repeat="cell in row track by $index">{{ cell }}</td>
       </tr>
-    </tbody>
-  </table>
+    </table>
+  </div>
 
   <script>
-    angular.module('sheetApp', []).controller('SheetController', function($scope, $http) {
-      const sheetId = 'YOUR_SHEET_ID_HERE';
-      const sheetName = 'Inventory';
-      //const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?alt=json&key=YOUR_API_KEY`;
-      const url=`https://docs.google.com/spreadsheets/d/e/2PACX-1vTJsa_NO-PA69sAIlKxJPAiAHbvrK6Dcjmg8xs79Le0Z3DduYp8d0Ma_xglC0XcMYRHnt09c8Lsvlbc/pub?output=xlsx`
+     var app = angular.module('sheetApp', []);
+
+    app.controller('SheetController', function($scope, $http) {
+      var sheetId = '1IoPvU2jKjnAUknBogksGrPrEXPyRYoYZnht_1DV-1qQ';
+      var sheetName = 'Inventory';
+      var apiKey = 'AIzaSyC-URv1x_ccwdwwK-wpS--TJ7wbkWR9wDI';
+       $scope.nameFilter = '';
+
+      $scope.filterByName = function(row) {
+        const filterText = $scope.nameFilter?.toLowerCase() || '';
+        const firstColumn = row[3]?.toLowerCase() || '';
+        return firstColumn.includes(filterText);
+      };
+      var url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?key=${apiKey}`;
+
       $http.get(url).then(function(response) {
-        const data = response.data.values;
-        $scope.headers = data[0];
-        $scope.rows = data.slice(1);
+        $scope.sheetData = response.data.values;
       }, function(error) {
-        console.error('Failed to load data:', error);
+        console.error('Error fetching sheet:', error);
       });
     });
-  </script>
 
+  </script>
 </body>
 </html>
+
